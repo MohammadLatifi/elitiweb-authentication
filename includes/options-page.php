@@ -17,11 +17,12 @@ function carbon_attach_theme_options()
 {
     Container::make('theme_options', __('Elitiweb Authentication'))
         ->add_fields([
-            Field::make('text', 'crb_text', 'Text Field'),
+            Field::make('text', 'clerk_publishable_key', 'Clerk Publishable Key:'),
+            Field::make('text', 'your_clerk_domain', 'Your Clerk Domain:'),
         ]);
 }
 
 function handle_save_of_container_theme_options()
 {
-    carbon_get_theme_option('crb_text_1');
+    carbon_get_theme_option('clerk_publishable_key');
 }
