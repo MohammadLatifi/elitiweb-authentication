@@ -5,9 +5,9 @@
  */
 
 /*
-    Plugin Name: Elitiweb Authentication
+    Plugin Name: Elitiweb Clerk
     Plugin URI: https://Elitiweb.com/
-    Description: Used by millions, Elitiweb Authentication is one of the best plugins.
+    Description: Used by millions, Elitiweb Authentication with Clerk is one of the best plugins.
     Version: 1.0.0
     Requires at least: 5.8
     Requires PHP: 7.4.0

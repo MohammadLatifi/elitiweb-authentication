@@ -14,7 +14,7 @@ function load_carbon_fields()
 
 function carbon_attach_theme_options()
 {
-    Container::make('theme_options', __('Elitiweb Authentication'))
+    Container::make('theme_options', __('Elitiweb Clerk'))
         ->add_fields([
             Field::make('html', 'elitiweb_authentication_information_text')
                 ->set_html('
