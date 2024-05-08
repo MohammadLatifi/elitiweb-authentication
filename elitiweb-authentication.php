@@ -46,6 +46,7 @@ if (!class_exists('ElitiwebAuthentication')) {
             define('ELITIWEB_AUTHENTICATION_PLUGIN_PATH', __DIR__.'/');
 
             require_once ELITIWEB_AUTHENTICATION_PLUGIN_PATH.'vendor/autoload.php';
+
             add_action('init', [$this, 'create_sign_in_page']);
 
             add_action('wp_enqueue_scripts', [$this, 'load_assets']);
@@ -59,18 +60,11 @@ if (!class_exists('ElitiwebAuthentication')) {
 
         public function initialize()
         {
-            include_once ELITIWEB_AUTHENTICATION_PLUGIN_PATH.'includes/utilities.php';
             include_once ELITIWEB_AUTHENTICATION_PLUGIN_PATH.'includes/options-page.php';
-            $menu = wp_get_nav_menu_name('site-navigation');
-
-            // exit(var_dump($menu));
         }
 
         public function custom_menu_items($items, $args)
         {
-            // exit(var_dump($args->theme_location));
-
-            // Add your HTML tag here
             $items .= '<li id="elitiweb-authentication-nav-item"></li>';
 
             return $items;
@@ -79,15 +73,9 @@ if (!class_exists('ElitiwebAuthentication')) {
         public function create_sign_in_page()
         {
             if (!get_page_by_path('sign-in')) {
-                $page_title = 'sign-in';
-                $page_content = '
-                    <div id="sign-in"></div>
-                ';
-
-                // Create an array of page arguments
                 $page_args = [
-                    'post_title' => $page_title,
-                    'post_content' => $page_content,
+                    'post_title' => 'sign-in',
+                    'post_content' => '<div id="sign-in"></div>',
                     'post_status' => 'publish',
                     'post_type' => 'page',
                     'post_name' => 'sign-in',
@@ -109,6 +97,15 @@ if (!class_exists('ElitiwebAuthentication')) {
                 [],
                 '1.0.0',
                 false);
+
+            if (is_page('sign-in')) {
+                wp_enqueue_style(
+                    'elitiweb-authentication-sign-in-css',
+                    plugin_dir_url(__FILE__).'includes/css/sign-in-style.css', [],
+                    '1.0.0',
+                    false
+                );
+            }
         }
 
         public function load_scripts_in_footer()
@@ -119,7 +116,7 @@ if (!class_exists('ElitiwebAuthentication')) {
             
             const clerkPublishableKey = '<?php echo carbon_get_theme_option('clerk_publishable_key'); ?>';
             const frontendApiUrl = '<?php echo carbon_get_theme_option('your_clerk_domain'); ?>';
-            const version = '@5.2.1'; // Set to appropriate version
+            const version = '@5.2.1';
 
             const script = document.createElement('script');
             script.setAttribute('data-clerk-publishable-key', clerkPublishableKey);
@@ -128,27 +125,32 @@ if (!class_exists('ElitiwebAuthentication')) {
             const userButton = document.getElementById('user-button');
             const signInButton = document.getElementById('sign-in-button');
 
-            // Adds listener to initialize ClerkJS after it's loaded
             script.addEventListener('load', async function () {
-                await window.Clerk.load().then(()=>{
-                    if (window.Clerk.user) {
-                        document.getElementById("elitiweb-authentication-nav-item").innerHTML = `
-                            <div id="user-button"></div>
-                        `;
-
-                        const userButtonDiv = document.getElementById("user-button");
-
-                        window.Clerk.mountUserButton(userButtonDiv);
-                        } else {
+                await window.Clerk.load({
+                    signInForceRedirectUrl: '<?php echo home_url(); ?>',
+                    signOutForceRedirectUrl: '<?php echo home_url(); ?>',
+                    routerPush : ()=>{
+                        window.location.current = '<?php echo home_url(); ?>';
                         document.getElementById("elitiweb-authentication-nav-item").innerHTML = `
                             <a href = "<?php echo home_url(); ?>/index.php/sign-in"> Sign in </a>
                         `;
+                    }
+                }).then(()=>{
+                   
+                    if (window.Clerk.user) {
+                            document.getElementById("elitiweb-authentication-nav-item").innerHTML = `<div id="user-button"></div>`;
 
-                        // <div id="sign-in"></div>
+                            const userButtonDiv = document.getElementById("user-button");
 
-                        const signInDiv = document.getElementById("sign-in");
+                            window.Clerk.mountUserButton(userButtonDiv);
+                        } else {
+                            document.getElementById("elitiweb-authentication-nav-item").innerHTML = `
+                                <a href = "<?php echo home_url(); ?>/index.php/sign-in"> Sign in </a>
+                            `;
 
-                        window.Clerk.mountSignIn(signInDiv);
+                            const signInDiv = document.getElementById("sign-in");
+
+                            window.Clerk.mountSignIn(signInDiv);
                     }
                 })
             });
