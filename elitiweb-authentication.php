@@ -46,16 +46,69 @@ if (!class_exists('ElitiwebAuthentication')) {
             define('ELITIWEB_AUTHENTICATION_PLUGIN_PATH', __DIR__.'/');
 
             require_once ELITIWEB_AUTHENTICATION_PLUGIN_PATH.'vendor/autoload.php';
+            add_action('init', [$this, 'create_sign_in_page']);
+
+            add_action('wp_enqueue_scripts', [$this, 'load_assets']);
 
             add_action('wp_body_open', [$this, 'add_clerk_html_to_body']);
 
             add_action('wp_footer', [$this, 'load_scripts_in_footer']);
+
+            add_filter('wp_nav_menu_items', [$this, 'custom_menu_items'], 10, 2);
         }
 
         public function initialize()
         {
             include_once ELITIWEB_AUTHENTICATION_PLUGIN_PATH.'includes/utilities.php';
             include_once ELITIWEB_AUTHENTICATION_PLUGIN_PATH.'includes/options-page.php';
+            $menu = wp_get_nav_menu_name('site-navigation');
+
+            // exit(var_dump($menu));
+        }
+
+        public function custom_menu_items($items, $args)
+        {
+            // exit(var_dump($args->theme_location));
+
+            // Add your HTML tag here
+            $items .= '<li id="elitiweb-authentication-nav-item"></li>';
+
+            return $items;
+        }
+
+        public function create_sign_in_page()
+        {
+            if (!get_page_by_path('sign-in')) {
+                $page_title = 'sign-in';
+                $page_content = '
+                    <div id="sign-in"></div>
+                ';
+
+                // Create an array of page arguments
+                $page_args = [
+                    'post_title' => $page_title,
+                    'post_content' => $page_content,
+                    'post_status' => 'publish',
+                    'post_type' => 'page',
+                    'post_name' => 'sign-in',
+                ];
+
+                // Insert the page into the database
+                $page_id = wp_insert_post($page_args);
+
+                // Return the ID of the newly created page
+                return $page_id;
+            }
+        }
+
+        public function load_assets()
+        {
+            wp_enqueue_style(
+                'elitiweb-authentication-css',
+                plugin_dir_url(__FILE__).'includes/css/style.css',
+                [],
+                '1.0.0',
+                false);
         }
 
         public function load_scripts_in_footer()
@@ -79,7 +132,7 @@ if (!class_exists('ElitiwebAuthentication')) {
             script.addEventListener('load', async function () {
                 await window.Clerk.load().then(()=>{
                     if (window.Clerk.user) {
-                        document.getElementById("app").innerHTML = `
+                        document.getElementById("elitiweb-authentication-nav-item").innerHTML = `
                             <div id="user-button"></div>
                         `;
 
@@ -87,9 +140,11 @@ if (!class_exists('ElitiwebAuthentication')) {
 
                         window.Clerk.mountUserButton(userButtonDiv);
                         } else {
-                        document.getElementById("app").innerHTML = `
-                            <div id="sign-in"></div>
+                        document.getElementById("elitiweb-authentication-nav-item").innerHTML = `
+                            <a href = "<?php echo home_url(); ?>/index.php/sign-in"> Sign in </a>
                         `;
+
+                        // <div id="sign-in"></div>
 
                         const signInDiv = document.getElementById("sign-in");
 

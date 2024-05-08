@@ -1,0 +1,14 @@
+
+.cl-userButtonTrigger:hover {
+    --cl-shimmer-hover-transform: 'none' !important; /* Reset transform */
+    --cl-shimmer-hover-after-transform: 'none' !important; /* Reset transform */
+    background-color: unset !important;
+}
+
+.cl-userButtonTrigger:focus {
+    --cl-shimmer-hover-transform: 'none' !important; /* Reset transform */
+    --cl-shimmer-hover-after-transform: 'none' !important; /* Reset transform */
+    background-color: unset !important;
+    outline: unset !important;
+    box-shadow: unset !important;
+}
