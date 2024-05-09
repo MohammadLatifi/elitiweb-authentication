@@ -12,3 +12,13 @@
     outline: unset !important;
     box-shadow: unset !important;
 }
+
+
+
+.restricted-page-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-block: 2rem;
+    align-items: center;
+}

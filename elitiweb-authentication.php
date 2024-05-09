@@ -56,6 +56,75 @@ if (!class_exists('ElitiwebAuthentication')) {
             add_action('wp_footer', [$this, 'load_scripts_in_footer']);
 
             add_filter('wp_nav_menu_items', [$this, 'custom_menu_items'], 10, 2);
+
+            // add shortcodes:
+            add_shortcode('restricted-page', [$this, 'restricted_page_shortcode']);
+            add_shortcode('user-firstname', [$this, 'user_firstname_shortcode']);
+            add_shortcode('user-lastname', [$this, 'user_lastname_shortcode']);
+            add_shortcode('user-fullname', [$this, 'user_fullname_shortcode']);
+            add_shortcode('user-username', [$this, 'user_username_shortcode']);
+            add_shortcode('user-email', [$this, 'user_email_shortcode']);
+            add_shortcode('user-image', [$this, 'user_image_shortcode']);
+        }
+
+        public function restricted_page_shortcode()
+        {
+            ?>
+                <input type="hidden" id="elitiweb-input-restricted-page" value='1' />
+            <?php
+        }
+
+        public function user_firstname_shortcode()
+        {
+            ?>
+            <p id="elitiweb-user-firstname"></p>
+        
+            <?php
+        }
+
+        // Add shortcode [user-lastname]
+        public function user_lastname_shortcode()
+        {
+            ?>
+            <p id="elitiweb-user-lastname"></p>
+        
+            <?php
+        }
+
+        // Add shortcode [user-fullname]
+        public function user_fullname_shortcode()
+        {
+            ?>
+            <p id="elitiweb-user-fullname"></p>
+        
+            <?php
+        }
+
+        // Add shortcode [user-username]
+        public function user_username_shortcode()
+        {
+            ?>
+            <p id="elitiweb-user-username"></p>
+        
+            <?php
+        }
+
+        // Add shortcode [user-email]
+        public function user_email_shortcode()
+        {
+            ?>
+            <p id="elitiweb-user-email"></p>
+        
+            <?php
+        }
+
+        // Add shortcode [user-image]
+        public function user_image_shortcode()
+        {
+            ?>
+            <img id="elitiweb-user-image" src='#'/>
+        
+            <?php
         }
 
         public function initialize()
@@ -124,13 +193,14 @@ if (!class_exists('ElitiwebAuthentication')) {
             script.src = '<?php echo plugin_dir_url(__FILE__); ?>'+'node_modules/@clerk/clerk-js/dist/clerk.browser.js';
             const userButton = document.getElementById('user-button');
             const signInButton = document.getElementById('sign-in-button');
-
+        
+            
             script.addEventListener('load', async function () {
                 await window.Clerk.load({
-                    signInForceRedirectUrl: '<?php echo home_url(); ?>',
-                    signOutForceRedirectUrl: '<?php echo home_url(); ?>',
+                    signInForceRedirectUrl: '<?php echo home_url().carbon_get_theme_option('redirected_after_sign_in'); ?>',
+                    signOutForceRedirectUrl: '<?php echo home_url().carbon_get_theme_option('redirected_after_sign_out'); ?>',
                     routerPush : ()=>{
-                        window.location.current = '<?php echo home_url(); ?>';
+                        window.location.assign('<?php echo home_url().carbon_get_theme_option('redirected_after_sign_out'); ?>');
                         document.getElementById("elitiweb-authentication-nav-item").innerHTML = `
                             <a href = "<?php echo home_url(); ?>/index.php/sign-in"> Sign in </a>
                         `;
@@ -143,6 +213,21 @@ if (!class_exists('ElitiwebAuthentication')) {
                             const userButtonDiv = document.getElementById("user-button");
 
                             window.Clerk.mountUserButton(userButtonDiv);
+
+                            const elitiweb_user_firstname = document.getElementById("elitiweb-user-firstname");
+                            const elitiweb_user_lastname = document.getElementById("elitiweb-user-lastname");
+                            const elitiweb_user_fullname = document.getElementById("elitiweb-user-fullname");
+                            const elitiweb_user_username = document.getElementById("elitiweb-user-username");
+                            const elitiweb_user_email = document.getElementById("elitiweb-user-email");
+                            const elitiweb_user_image = document.getElementById("elitiweb-user-image");
+
+                            if(elitiweb_user_firstname !== null) elitiweb_user_firstname.innerHTML = window.Clerk.user?.firstName;
+                            if(elitiweb_user_lastname !== null) elitiweb_user_lastname.innerHTML = window.Clerk.user?.lastName;
+                            if(elitiweb_user_fullname !== null) elitiweb_user_fullname.innerHTML = window.Clerk.user?.fullName;
+                            if(elitiweb_user_username !== null) elitiweb_user_username.innerHTML = window.Clerk.user?.username;
+                            if(elitiweb_user_email !== null) elitiweb_user_email.innerHTML = window.Clerk.user?.primaryEmailAddress;
+                            if(elitiweb_user_image !== null) elitiweb_user_image.src = window.Clerk.user?.imageUrl;
+                           
                         } else {
                             document.getElementById("elitiweb-authentication-nav-item").innerHTML = `
                                 <a href = "<?php echo home_url(); ?>/index.php/sign-in"> Sign in </a>
@@ -151,10 +236,25 @@ if (!class_exists('ElitiwebAuthentication')) {
                             const signInDiv = document.getElementById("sign-in");
 
                             window.Clerk.mountSignIn(signInDiv);
+
+                            const isRestrictedPage = document.getElementById("elitiweb-input-restricted-page");
+
+                            if(isRestrictedPage !== null) {
+                                document.body.innerHTML = `
+
+                                    <div class='restricted-page-content'>
+                                        <h1>Restricted Page</h1>
+                                        <p>To access this page, you need to <a href = "<?php echo home_url(); ?>/index.php/sign-in">Sign in</a> first. </p>
+                                    </div>
+                                `;
+                            }
                     }
                 })
             });
+
             document.body.appendChild(script);
+
+
             </script>
             <?php
         }
